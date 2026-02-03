@@ -16,6 +16,14 @@ export default function Sidebar() {
         const file = e.target.files?.[0];
         if (!file) return;
 
+        // Vercel Free Tier & Next.js Limit: ~4.5MB
+        // We set limit to 4MB to be safe
+        if (file.size > 4 * 1024 * 1024) {
+            alert('File too large! This demo allows files under 4MB.');
+            if (fileInputRef.current) fileInputRef.current.value = '';
+            return;
+        }
+
         setIsUploading(true);
         const formData = new FormData();
         formData.append('file', file);
@@ -26,18 +34,38 @@ export default function Sidebar() {
                 body: formData,
             });
 
-            const data = await response.json();
+            // Handle non-JSON responses (e.g. 504 Timeout, 413 Payload Too Large)
+            let data;
+            try {
+                data = await response.json();
+            } catch (jsonError) {
+                if (!response.ok) {
+                    throw new Error(`Server Error: ${response.status} ${response.statusText}`);
+                }
+                throw new Error('Invalid server response');
+            }
 
             if (!response.ok) {
+                // Check closely for the "Missing Auth" error
+                if (data.error && data.error.includes('Missing Google Auth')) {
+                    throw new Error('Server secrets are missing! Did you add the Environment Variables in Vercel?');
+                }
                 throw new Error(data.message || data.error || 'Upload failed');
             }
 
             alert('File uploaded successfully! Check your Google Drive.');
+            // Refresh the page automatically to show the new file
+            window.location.reload();
+
         } catch (error: any) {
-            alert(`Error: ${error.message}`);
+            // Show friendlier message for network errors
+            if (error.message === 'Load failed' || error.message === 'Failed to fetch') {
+                alert('Network Error: The upload was interrupted. The file might be too large or the connection is slow.');
+            } else {
+                alert(`Error: ${error.message}`);
+            }
         } finally {
             setIsUploading(false);
-            // Reset input so same file can be selected again if needed
             if (fileInputRef.current) fileInputRef.current.value = '';
         }
     };
