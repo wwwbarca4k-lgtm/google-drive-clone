@@ -1,0 +1,58 @@
+.header {
+    height: var(--header-height);
+    background-color: var(--surface);
+    display: flex;
+    align-items: center;
+    padding: 0 16px;
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+.logoArea {
+    display: flex;
+    align-items: center;
+    width: var(--sidebar-width);
+    font-size: 22px;
+    color: var(--text-secondary);
+    gap: 8px;
+}
+
+.logoIcon {
+    width: 40px;
+    height: 40px;
+}
+
+.searchBar {
+    flex: 1;
+    max-width: 720px;
+    background: #edf2fc;
+    border-radius: 8px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    padding: 0 16px;
+    margin-left: 16px;
+    transition: background 0.2s, box-shadow 0.2s;
+}
+
+.searchBar:focus-within {
+    background: #fff;
+    box-shadow: var(--shadow-sm);
+}
+
+.searchInput {
+    border: none;
+    background: transparent;
+    width: 100%;
+    padding: 8px;
+    font-size: 16px;
+    outline: none;
+}
+
+.actions {
+    margin-left: auto;
+    display: flex;
+    gap: 12px;
+}
