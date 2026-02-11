@@ -1,13 +1,19 @@
+/* Glassmorphism Header */
 .header {
     height: var(--header-height);
-    background-color: var(--surface);
+    background: rgba(255, 255, 255, 0.03);
+    /* Subtle glass bg */
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    /* Faint border */
     display: flex;
     align-items: center;
-    padding: 0 16px;
-    border-bottom: 1px solid var(--border);
+    padding: 0 24px;
     position: sticky;
     top: 0;
     z-index: 100;
+    box-shadow: 0 4px 12px 0 rgba(0, 0, 0, 0.2);
 }
 
 .logoArea {
@@ -15,44 +21,72 @@
     align-items: center;
     width: var(--sidebar-width);
     font-size: 22px;
-    color: var(--text-secondary);
-    gap: 8px;
+    font-weight: 600;
+    color: #fff;
+    /* White text for contrast */
+    gap: 12px;
+    letter-spacing: -0.5px;
 }
 
 .logoIcon {
-    width: 40px;
-    height: 40px;
+    width: 36px;
+    height: 36px;
+    filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.3));
+    /* Glow effect for logo */
 }
 
 .searchBar {
     flex: 1;
-    max-width: 720px;
-    background: #edf2fc;
-    border-radius: 8px;
+    max-width: 640px;
+    background: rgba(255, 255, 255, 0.1);
+    /* Darker glass for input */
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    /* Smooth corners */
     height: 48px;
     display: flex;
     align-items: center;
     padding: 0 16px;
-    margin-left: 16px;
-    transition: background 0.2s, box-shadow 0.2s;
+    margin-left: 24px;
+    transition: all 0.3s ease;
+    color: rgba(255, 255, 255, 0.8);
 }
 
 .searchBar:focus-within {
-    background: #fff;
-    box-shadow: var(--shadow-sm);
+    background: rgba(255, 255, 255, 0.15);
+    border-color: rgba(255, 255, 255, 0.3);
+    box-shadow: 0 0 16px rgba(168, 85, 247, 0.25);
+    /* Purple glow on focus */
 }
 
 .searchInput {
     border: none;
     background: transparent;
     width: 100%;
-    padding: 8px;
+    padding: 8px 12px;
     font-size: 16px;
     outline: none;
+    color: #fff;
+}
+
+.searchInput::placeholder {
+    color: rgba(255, 255, 255, 0.5);
 }
 
 .actions {
     margin-left: auto;
     display: flex;
-    gap: 12px;
+    gap: 16px;
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.actions svg {
+    cursor: pointer;
+    transition: color 0.2s, transform 0.2s;
+}
+
+.actions svg:hover {
+    color: #fff;
+    transform: scale(1.1);
+    filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.5));
 }

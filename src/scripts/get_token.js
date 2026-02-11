@@ -4,8 +4,10 @@ const url = require('url');
 const open = require('open'); // We might need to ask user to install this or just print URL
 
 // 1. Enter your credentials here
-const CLIENT_ID = 'YOUR_CLIENT_ID';
-const CLIENT_SECRET = 'YOUR_CLIENT_SECRET';
+const CLIENT_ID = '1011444708432-ctga63tq9grku3g7q3kl2unbf2nnuifn.apps.googleusercontent.com';
+
+const CLIENT_SECRET = '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';
+
 const REDIRECT_URI = 'http://localhost:3000/oauth2callback';
 
 const oauth2Client = new google.auth.OAuth2(
