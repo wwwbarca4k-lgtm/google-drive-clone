@@ -1,7 +1,7 @@
 'use client';
 
 import styles from './Header.module.css';
-import { Search, Bell, User } from 'lucide-react';
+import { Search, User } from 'lucide-react';
 
 export default function Header() {
   return (
@@ -18,9 +18,6 @@ export default function Header() {
 
       {/* Right Actions */}
       <div className={styles.actions}>
-        <button className={styles.iconButton}>
-          <Bell size={20} />
-        </button>
         <div className={styles.userProfile}>
           <User size={20} />
         </div>
