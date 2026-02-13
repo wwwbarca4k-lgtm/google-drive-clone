@@ -11,6 +11,7 @@ interface DriveFile {
     owner: string;
     modified: string;
     size: string;
+    sizeBytes: number;
     link: string;
     icon?: string;
 }
@@ -103,38 +104,30 @@ export default function Dashboard() {
     };
 
     // --- Compute real stats from files ---
-    const TOTAL_STORAGE_MB = 15 * 1024; // 15GB in MB
+    const TOTAL_STORAGE_BYTES = 15 * 1024 * 1024 * 1024; // 15GB
 
-    const parseSizeMB = (size: string): number => {
-        if (!size || size === '-') return 0;
-        const num = parseFloat(size);
-        if (size.includes('MB')) return num;
-        if (size.includes('KB')) return num / 1024;
-        if (size.includes('GB')) return num * 1024;
-        return num;
+    const totalUsedBytes = files.reduce((acc, f) => acc + (f.sizeBytes || 0), 0);
+    const usedPercent = TOTAL_STORAGE_BYTES > 0 ? Math.min(Math.round((totalUsedBytes / TOTAL_STORAGE_BYTES) * 100), 100) : 0;
+
+    const formatSize = (bytes: number): string => {
+        if (bytes >= 1024 * 1024 * 1024) return (bytes / (1024 * 1024 * 1024)).toFixed(2) + ' GB';
+        if (bytes >= 1024 * 1024) return (bytes / (1024 * 1024)).toFixed(2) + ' MB';
+        if (bytes >= 1024) return (bytes / 1024).toFixed(0) + ' KB';
+        return bytes + ' B';
     };
 
-    const totalUsedMB = files.reduce((acc, f) => acc + parseSizeMB(f.size), 0);
-    const usedPercent = TOTAL_STORAGE_MB > 0 ? Math.min(Math.round((totalUsedMB / TOTAL_STORAGE_MB) * 100), 100) : 0;
+    // Categorize files by type
+    const photosBytes = files.filter(f => f.type.includes('image')).reduce((a, f) => a + (f.sizeBytes || 0), 0);
+    const videosBytes = files.filter(f => f.type.includes('video')).reduce((a, f) => a + (f.sizeBytes || 0), 0);
+    const docsBytes = files.filter(f => f.type.includes('pdf') || f.type.includes('document') || f.type.includes('text') || f.type.includes('spreadsheet') || f.type.includes('presentation')).reduce((a, f) => a + (f.sizeBytes || 0), 0);
+    const musicBytes = files.filter(f => f.type.includes('audio')).reduce((a, f) => a + (f.sizeBytes || 0), 0);
+    const otherBytes = totalUsedBytes - photosBytes - videosBytes - docsBytes - musicBytes;
 
-    const formatSize = (mb: number): string => {
-        if (mb >= 1024) return (mb / 1024).toFixed(2) + ' GB';
-        if (mb >= 1) return mb.toFixed(2) + ' MB';
-        return (mb * 1024).toFixed(0) + ' KB';
-    };
-
-    // Categorize files
-    const photosMB = files.filter(f => f.type.includes('image')).reduce((a, f) => a + parseSizeMB(f.size), 0);
-    const videosMB = files.filter(f => f.type.includes('video')).reduce((a, f) => a + parseSizeMB(f.size), 0);
-    const docsMB = files.filter(f => f.type.includes('pdf') || f.type.includes('document') || f.type.includes('text') || f.type.includes('spreadsheet') || f.type.includes('presentation')).reduce((a, f) => a + parseSizeMB(f.size), 0);
-    const musicMB = files.filter(f => f.type.includes('audio')).reduce((a, f) => a + parseSizeMB(f.size), 0);
-    const otherMB = totalUsedMB - photosMB - videosMB - docsMB - musicMB;
-
-    const safePercent = (part: number) => totalUsedMB > 0 ? Math.round((part / totalUsedMB) * 100) : 0;
-    const photosP = safePercent(photosMB);
-    const videosP = safePercent(videosMB);
-    const docsP = safePercent(docsMB);
-    const musicP = safePercent(musicMB);
+    const safePercent = (part: number) => totalUsedBytes > 0 ? Math.round((part / totalUsedBytes) * 100) : 0;
+    const photosP = safePercent(photosBytes);
+    const videosP = safePercent(videosBytes);
+    const docsP = safePercent(docsBytes);
+    const musicP = safePercent(musicBytes);
     const otherP = 100 - photosP - videosP - docsP - musicP;
 
     return (
@@ -180,7 +173,7 @@ export default function Dashboard() {
                     <div className={styles.statHeader}>
                         <span className={styles.statLabel}>USED STORAGE</span>
                     </div>
-                    <div className={styles.statValue}>{formatSize(totalUsedMB)}</div>
+                    <div className={styles.statValue}>{formatSize(totalUsedBytes)}</div>
                 </div>
                 <div className={styles.statCard}>
                     <div className={styles.statHeader}>
@@ -240,28 +233,28 @@ export default function Dashboard() {
                             <ImageIcon size={24} color="#6366f1" />
                             <div>
                                 <div className={styles.categoryName}>Photos</div>
-                                <div className={styles.categorySize}>{formatSize(photosMB)}</div>
+                                <div className={styles.categorySize}>{formatSize(photosBytes)}</div>
                             </div>
                         </div>
                         <div className={styles.categoryCard}>
                             <Video size={24} color="#a855f7" />
                             <div>
                                 <div className={styles.categoryName}>Videos</div>
-                                <div className={styles.categorySize}>{formatSize(videosMB)}</div>
+                                <div className={styles.categorySize}>{formatSize(videosBytes)}</div>
                             </div>
                         </div>
                         <div className={styles.categoryCard}>
                             <FileText size={24} color="#f59e0b" />
                             <div>
                                 <div className={styles.categoryName}>Documents</div>
-                                <div className={styles.categorySize}>{formatSize(docsMB)}</div>
+                                <div className={styles.categorySize}>{formatSize(docsBytes)}</div>
                             </div>
                         </div>
                         <div className={styles.categoryCard}>
                             <Music size={24} color="#22c55e" />
                             <div>
                                 <div className={styles.categoryName}>Music</div>
-                                <div className={styles.categorySize}>{formatSize(musicMB)}</div>
+                                <div className={styles.categorySize}>{formatSize(musicBytes)}</div>
                             </div>
                         </div>
                     </div>

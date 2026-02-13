@@ -85,7 +85,7 @@ export async function GET() {
             q: query,
             fields: 'files(id, name, mimeType, modifiedTime, size, owners, webViewLink, iconLink)',
             orderBy: 'folder, modifiedTime desc',
-            pageSize: 20,
+            pageSize: 100,
         });
 
         const files = response.data.files || [];
@@ -97,6 +97,7 @@ export async function GET() {
             owner: file.owners?.[0]?.displayName || 'Me',
             modified: file.modifiedTime ? new Date(file.modifiedTime).toLocaleDateString() : '-',
             size: file.size ? (parseInt(file.size) / 1024 / 1024).toFixed(2) + ' MB' : '-',
+            sizeBytes: file.size ? parseInt(file.size) : 0,
             link: file.webViewLink,
             icon: file.iconLink
         }));
