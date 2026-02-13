@@ -1,7 +1,7 @@
 'use client';
 
 import styles from './Sidebar.module.css';
-import { FolderOpen, Clock, Users, Star, Trash2, Settings, HardDrive } from 'lucide-react';
+import { Home, Clock, Users, Star, Trash2, Settings, HardDrive } from 'lucide-react';
 import { useRef, useState } from 'react';
 
 export default function Sidebar() {
@@ -47,7 +47,7 @@ export default function Sidebar() {
 
             alert('File uploaded successfully! Check your Google Drive.');
             window.location.reload();
-            
+
         } catch (error: any) {
             if (error.message === 'Load failed' || error.message === 'Failed to fetch') {
                 alert('Network Error: The upload was interrupted. The file might be too large or the connection is slow.');
@@ -78,8 +78,8 @@ export default function Sidebar() {
             {/* Navigation */}
             <nav className={styles.nav}>
                 <div className={`${styles.navItem} ${styles.active}`}>
-                    <FolderOpen size={20} />
-                    <span>All Files</span>
+                    <Home size={20} />
+                    <span>Home</span>
                 </div>
                 <div className={styles.navItem}>
                     <Clock size={20} />
@@ -91,7 +91,7 @@ export default function Sidebar() {
                 </div>
                 <div className={styles.navItem}>
                     <Star size={20} />
-                    <span>Starred</span>
+                    <span>Favourites</span>
                 </div>
                 <div className={styles.navItem}>
                     <Trash2 size={20} />
