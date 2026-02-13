@@ -114,9 +114,9 @@ export default function Dashboard() {
             {/* Header Section */}
             <div className={styles.dashboardHeader}>
                 <div>
-                    <h1 className={styles.title}>My Cloud.</h1>
+                    <h1 className={styles.title}>My Drive Storage.</h1>
                     <p className={styles.subtitle}>
-                        You have used <span className={styles.highlight}>70%</span> of your total storage. Manage your files efficiently.
+                        <span className={styles.highlight}>70%</span> storage used. Get more.
                     </p>
                 </div>
                 <div className={styles.actionButtons}>
@@ -136,7 +136,7 @@ export default function Dashboard() {
                 <div className={styles.statCard}>
                     <div className={styles.statHeader}>
                         <span className={styles.statLabel}>STORAGE</span>
-                        <span className={styles.statBadge}>MAX CAPACITY</span>
+                        <span className={styles.statBadge}>GET MORE STORAGE</span>
                     </div>
                     <div className={styles.statValue}>2TB</div>
                 </div>
