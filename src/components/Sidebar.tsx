@@ -1,12 +1,41 @@
 'use client';
 
 import styles from './Sidebar.module.css';
-import { Home, Clock, Users, Star, Trash2, Settings, HardDrive } from 'lucide-react';
+import { Home, Clock, Star, Trash2, Settings, HardDrive } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
+import { useState, useEffect } from 'react';
 
 export default function Sidebar() {
     const pathname = usePathname();
+    const [usedBytes, setUsedBytes] = useState(0);
+
+    const TOTAL_BYTES = 15 * 1024 * 1024 * 1024; // 15GB
+
+    useEffect(() => {
+        async function fetchUsage() {
+            try {
+                const res = await fetch('/api/files');
+                const data = await res.json();
+                if (data.files) {
+                    const total = data.files.reduce((acc: number, f: any) => acc + (f.sizeBytes || 0), 0);
+                    setUsedBytes(total);
+                }
+            } catch (e) {
+                console.error('Failed to fetch storage usage', e);
+            }
+        }
+        fetchUsage();
+    }, []);
+
+    const usedPercent = TOTAL_BYTES > 0 ? Math.min(Math.round((usedBytes / TOTAL_BYTES) * 100), 100) : 0;
+
+    const formatSize = (bytes: number): string => {
+        if (bytes >= 1024 * 1024 * 1024) return (bytes / (1024 * 1024 * 1024)).toFixed(2) + ' GB';
+        if (bytes >= 1024 * 1024) return (bytes / (1024 * 1024)).toFixed(2) + ' MB';
+        if (bytes >= 1024) return (bytes / 1024).toFixed(0) + ' KB';
+        return bytes + ' B';
+    };
 
     const navItems = [
         { href: '/', icon: Home, label: 'Home' },
@@ -48,12 +77,12 @@ export default function Sidebar() {
                 <div className={styles.storageCard}>
                     <div className={styles.storageHeader}>
                         <span className={styles.storageLabel}>STORAGE USAGE</span>
-                        <span className={styles.storagePercent}>70%</span>
+                        <span className={styles.storagePercent}>{usedPercent}%</span>
                     </div>
                     <div className={styles.progressBar}>
-                        <div className={styles.progress} style={{ width: '70%' }}></div>
+                        <div className={styles.progress} style={{ width: `${usedPercent}%` }}></div>
                     </div>
-                    <div className={styles.storageText}>1.4TB of 2TB</div>
+                    <div className={styles.storageText}>{formatSize(usedBytes)} of 15 GB</div>
                 </div>
             </div>
         </aside>

@@ -95,6 +95,27 @@ export default function Dashboard() {
         }
     };
 
+    const handleNewFolder = async () => {
+        const name = prompt('Enter folder name:');
+        if (!name || !name.trim()) return;
+
+        try {
+            const res = await fetch('/api/folders', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name: name.trim() }),
+            });
+
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error || 'Failed to create folder');
+
+            alert(`Folder "${data.name}" created!`);
+            window.location.reload();
+        } catch (error: any) {
+            alert(`Error: ${error.message}`);
+        }
+    };
+
     const getFileIcon = (type: string) => {
         if (type.includes('image')) return <ImageIcon size={18} />;
         if (type.includes('video')) return <Video size={18} />;
@@ -148,7 +169,7 @@ export default function Dashboard() {
                     </p>
                 </div>
                 <div className={styles.actionButtons}>
-                    <button className={styles.secondaryBtn}>
+                    <button className={styles.secondaryBtn} onClick={handleNewFolder}>
                         <FolderPlus size={20} />
                         New Folder
                     </button>
