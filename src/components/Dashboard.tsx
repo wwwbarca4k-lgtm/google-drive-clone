@@ -135,15 +135,14 @@ export default function Dashboard() {
             <div className={styles.statsGrid}>
                 <div className={styles.statCard}>
                     <div className={styles.statHeader}>
-                        <span className={styles.statLabel}>TOTAL STORAGE</span>
+                        <span className={styles.statLabel}>STORAGE</span>
                         <span className={styles.statBadge}>MAX CAPACITY</span>
                     </div>
                     <div className={styles.statValue}>2TB</div>
                 </div>
                 <div className={styles.statCard}>
                     <div className={styles.statHeader}>
-                        <span className={styles.statLabel}>USED SPACE</span>
-                        <span className={styles.statBadge} style={{ background: 'rgba(99, 102, 241, 0.2)', color: '#6366f1' }}>70%</span>
+                        <span className={styles.statLabel}>USED STORAGE</span>
                     </div>
                     <div className={styles.statValue}>1.4TB</div>
                 </div>
