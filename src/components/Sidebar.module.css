@@ -1,91 +1,106 @@
-/* Glass Sidebar */
+/* VANGUARD Sidebar */
 .sidebar {
-    width: var(--sidebar-width);
-    padding: 24px;
+    width: 240px;
+    height: 100vh;
+    background: rgba(15, 15, 30, 0.95);
+    border-right: 1px solid rgba(255, 255, 255, 0.05);
     display: flex;
     flex-direction: column;
-    height: calc(100vh - var(--header-height));
-    position: sticky;
-    top: var(--header-height);
-    background: transparent;
-    /* Seamless with background */
+    padding: 24px 16px;
+    position: fixed;
+    left: 0;
+    top: 0;
 }
 
-/* New Button with Gradient */
-.newButton {
+/* Logo */
+.logo {
     display: flex;
     align-items: center;
     gap: 12px;
-    background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
-    /* Purple Gradient */
-    box-shadow: 0 4px 15px rgba(168, 85, 247, 0.4);
-    border: none;
-    border-radius: 16px;
-    padding: 16px 24px;
-    width: fit-content;
-    margin-bottom: 32px;
-    transition: all 0.2s ease;
-    font-weight: 600;
-    font-size: 15px;
-    color: white;
-    cursor: pointer;
+    font-size: 20px;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 40px;
+    padding: 0 8px;
+    letter-spacing: 1px;
 }
 
-.newButton:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(168, 85, 247, 0.6);
+.logo svg {
+    color: #6366f1;
+    filter: drop-shadow(0 0 10px rgba(99, 102, 241, 0.6));
 }
 
-.newButton svg {
-    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
-    color: white !important;
-    /* Force icon white */
+/* Navigation */
+.nav {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    flex: 1;
 }
 
-/* Menu Items */
-.menuItem {
+.navItem {
     display: flex;
     align-items: center;
-    gap: 16px;
-    padding: 12px 20px;
+    gap: 14px;
+    padding: 12px 16px;
     border-radius: 12px;
-    color: rgba(255, 255, 255, 0.7);
+    color: rgba(255, 255, 255, 0.6);
     font-size: 15px;
     font-weight: 500;
-    margin-bottom: 8px;
     cursor: pointer;
     transition: all 0.2s;
-    border: 1px solid transparent;
-    /* Prevent layout shift */
 }
 
-.menuItem:hover {
+.navItem:hover {
     background: rgba(255, 255, 255, 0.05);
-    color: white;
+    color: rgba(255, 255, 255, 0.9);
 }
 
-.menuItem.active {
+.navItem.active {
     background: rgba(99, 102, 241, 0.15);
-    /* Tinted active state */
-    color: #a855f7;
-    /* Purple text */
-    border-color: rgba(168, 85, 247, 0.3);
-    box-shadow: 0 0 15px rgba(168, 85, 247, 0.1) inset;
+    color: #6366f1;
+    box-shadow: 0 0 20px rgba(99, 102, 241, 0.1);
 }
 
-/* Storage Area */
-.storageInfo {
+.navItem svg {
+    flex-shrink: 0;
+}
+
+/* Bottom Section */
+.bottomSection {
     margin-top: auto;
-    padding: 24px;
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 16px;
+}
+
+/* Storage Card */
+.storageCard {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    padding: 16px;
+    margin-top: 16px;
+}
+
+.storageHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.storageLabel {
+    font-size: 11px;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.4);
+    letter-spacing: 0.8px;
+}
+
+.storagePercent {
     font-size: 13px;
-    color: rgba(255, 255, 255, 0.6);
-    background: rgba(0, 0, 0, 0.2);
-    /* Darker patch */
-    border-radius: 16px;
-    border: 1px solid rgba(255, 255, 255, 0.05);
+    font-weight: 700;
+    color: #6366f1;
 }
 
 .progressBar {
@@ -94,30 +109,19 @@
     background: rgba(255, 255, 255, 0.1);
     border-radius: 3px;
     overflow: hidden;
+    margin-bottom: 8px;
 }
 
 .progress {
-    width: 20%;
     height: 100%;
     background: linear-gradient(90deg, #6366f1, #a855f7);
-    box-shadow: 0 0 10px rgba(168, 85, 247, 0.5);
+    border-radius: 3px;
+    box-shadow: 0 0 10px rgba(99, 102, 241, 0.5);
+    transition: width 0.3s ease;
 }
 
-.subscribeButton {
-    color: #a855f7;
-    background: transparent;
-    border: 1px solid rgba(168, 85, 247, 0.5);
-    border-radius: 12px;
-    padding: 10px;
-    font-weight: 600;
-    margin-top: 8px;
-    text-align: center;
-    transition: all 0.2s;
-    cursor: pointer;
-}
-
-.subscribeButton:hover {
-    background: rgba(168, 85, 247, 0.1);
-    box-shadow: 0 0 15px rgba(168, 85, 247, 0.2);
-    border-color: #a855f7;
+.storageText {
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.5);
+    font-weight: 500;
 }

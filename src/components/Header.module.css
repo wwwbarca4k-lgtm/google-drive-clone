@@ -1,92 +1,99 @@
-/* Glassmorphism Header */
+/* VANGUARD Header */
 .header {
-    height: var(--header-height);
-    background: rgba(255, 255, 255, 0.03);
-    /* Subtle glass bg */
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-    /* Faint border */
+    height: 80px;
+    background: rgba(15, 15, 30, 0.8);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
     display: flex;
     align-items: center;
-    padding: 0 24px;
-    position: sticky;
+    justify-content: space-between;
+    padding: 0 40px;
+    position: fixed;
     top: 0;
-    z-index: 100;
-    box-shadow: 0 4px 12px 0 rgba(0, 0, 0, 0.2);
+    left: 240px;
+    right: 0;
+    z-index: 50;
 }
 
-.logoArea {
-    display: flex;
-    align-items: center;
-    width: var(--sidebar-width);
-    font-size: 22px;
-    font-weight: 600;
-    color: #fff;
-    /* White text for contrast */
-    gap: 12px;
-    letter-spacing: -0.5px;
-}
-
-.logoIcon {
-    width: 36px;
-    height: 36px;
-    filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.3));
-    /* Glow effect for logo */
-}
-
+/* Search Bar */
 .searchBar {
     flex: 1;
-    max-width: 640px;
-    background: rgba(255, 255, 255, 0.1);
-    /* Darker glass for input */
+    max-width: 600px;
+    background: rgba(255, 255, 255, 0.05);
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 12px;
-    /* Smooth corners */
     height: 48px;
     display: flex;
     align-items: center;
-    padding: 0 16px;
-    margin-left: 24px;
-    transition: all 0.3s ease;
-    color: rgba(255, 255, 255, 0.8);
+    padding: 0 20px;
+    gap: 12px;
+    transition: all 0.3s;
 }
 
 .searchBar:focus-within {
-    background: rgba(255, 255, 255, 0.15);
-    border-color: rgba(255, 255, 255, 0.3);
-    box-shadow: 0 0 16px rgba(168, 85, 247, 0.25);
-    /* Purple glow on focus */
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(99, 102, 241, 0.5);
+    box-shadow: 0 0 20px rgba(99, 102, 241, 0.15);
+}
+
+.searchBar svg {
+    color: rgba(255, 255, 255, 0.4);
+    flex-shrink: 0;
 }
 
 .searchInput {
     border: none;
     background: transparent;
     width: 100%;
-    padding: 8px 12px;
-    font-size: 16px;
+    font-size: 15px;
     outline: none;
     color: #fff;
 }
 
 .searchInput::placeholder {
-    color: rgba(255, 255, 255, 0.5);
+    color: rgba(255, 255, 255, 0.3);
 }
 
+/* Actions */
 .actions {
-    margin-left: auto;
     display: flex;
+    align-items: center;
     gap: 16px;
-    color: rgba(255, 255, 255, 0.7);
 }
 
-.actions svg {
+.iconButton {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: rgba(255, 255, 255, 0.6);
     cursor: pointer;
-    transition: color 0.2s, transform 0.2s;
+    transition: all 0.2s;
 }
 
-.actions svg:hover {
+.iconButton:hover {
+    background: rgba(255, 255, 255, 0.1);
     color: #fff;
-    transform: scale(1.1);
-    filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.5));
+}
+
+.userProfile {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #6366f1, #a855f7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+    transition: transform 0.2s;
+}
+
+.userProfile:hover {
+    transform: scale(1.05);
 }

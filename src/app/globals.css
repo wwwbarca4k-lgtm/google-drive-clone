@@ -1,28 +1,17 @@
 /* Global Reset */
 :root {
-  /* Mesh Gradient Colors */
-  --background: #0b0e14;
+  /* Dark Theme Colors */
+  --background: #0a0a14;
+  --background-secondary: #0f0f1e;
   --foreground: #ffffff;
-  --primary-gradient: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+  --primary: #6366f1;
+  --primary-dark: #4f46e5;
+  --accent: #a855f7;
 
-  /* Glassmorphism Variables */
+  /* Glassmorphism */
   --glass-bg: rgba(255, 255, 255, 0.05);
-  /* Very transparent white */
   --glass-border: rgba(255, 255, 255, 0.1);
-  /* Subtle thin border */
   --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
-  --glass-blur: blur(12px);
-
-  /* Legacy variables mapped to new theme */
-  --surface: var(--glass-bg);
-  --text-primary: #ffffff;
-  --text-secondary: rgba(255, 255, 255, 0.7);
-  --border: var(--glass-border);
-  --primary-accent: #a855f7;
-
-  --header-height: 72px;
-  --sidebar-width: 260px;
-  --border-radius: 16px;
 }
 
 * {
@@ -32,17 +21,13 @@
 }
 
 body {
-  /* Mesh Gradient Background */
-  background-color: var(--background);
-  background-image:
-    radial-gradient(at 0% 0%, hsla(253, 16%, 7%, 1) 0, transparent 50%),
-    radial-gradient(at 50% 0%, hsla(225, 39%, 30%, 1) 0, transparent 50%),
-    radial-gradient(at 100% 0%, hsla(339, 49%, 30%, 1) 0, transparent 50%);
+  /* Deep Space Background */
+  background: linear-gradient(135deg, #0a0a14 0%, #1a0f2e 50%, #0f0a1e 100%);
   background-attachment: fixed;
-  background-size: cover;
   color: var(--foreground);
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
   min-height: 100vh;
+  overflow-x: hidden;
 }
 
 a {
@@ -50,43 +35,10 @@ a {
   text-decoration: none;
 }
 
-/* Glassmorphism Utilities */
-.glass-panel {
-  background: var(--glass-bg);
-  backdrop-filter: var(--glass-blur);
-  -webkit-backdrop-filter: var(--glass-blur);
-  border: 1px solid var(--glass-border);
-  box-shadow: var(--glass-shadow);
-  border-radius: var(--border-radius);
-  color: white;
-}
-
-/* Primary Glowing Button */
-.primary-btn {
-  background: var(--primary-gradient);
-  color: white;
-  border: none;
-  border-radius: 12px;
-  padding: 12px 24px;
-  font-weight: 600;
-  cursor: pointer;
-  box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4);
-  /* The glow */
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-}
-
-.primary-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(99, 102, 241, 0.6);
-}
-
-/* Scrollbar Styling */
+/* Custom Scrollbar */
 ::-webkit-scrollbar {
   width: 8px;
+  height: 8px;
 }
 
 ::-webkit-scrollbar-track {
@@ -94,10 +46,20 @@ a {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.2);
+  background: rgba(99, 102, 241, 0.3);
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.3);
+  background: rgba(99, 102, 241, 0.5);
+}
+
+/* Utility Classes */
+.glass-panel {
+  background: var(--glass-bg);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow);
+  border-radius: 16px;
 }
