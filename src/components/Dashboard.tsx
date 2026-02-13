@@ -102,6 +102,41 @@ export default function Dashboard() {
         return <FileIcon size={18} />;
     };
 
+    // --- Compute real stats from files ---
+    const TOTAL_STORAGE_MB = 15 * 1024; // 15GB in MB
+
+    const parseSizeMB = (size: string): number => {
+        if (!size || size === '-') return 0;
+        const num = parseFloat(size);
+        if (size.includes('MB')) return num;
+        if (size.includes('KB')) return num / 1024;
+        if (size.includes('GB')) return num * 1024;
+        return num;
+    };
+
+    const totalUsedMB = files.reduce((acc, f) => acc + parseSizeMB(f.size), 0);
+    const usedPercent = TOTAL_STORAGE_MB > 0 ? Math.min(Math.round((totalUsedMB / TOTAL_STORAGE_MB) * 100), 100) : 0;
+
+    const formatSize = (mb: number): string => {
+        if (mb >= 1024) return (mb / 1024).toFixed(2) + ' GB';
+        if (mb >= 1) return mb.toFixed(2) + ' MB';
+        return (mb * 1024).toFixed(0) + ' KB';
+    };
+
+    // Categorize files
+    const photosMB = files.filter(f => f.type.includes('image')).reduce((a, f) => a + parseSizeMB(f.size), 0);
+    const videosMB = files.filter(f => f.type.includes('video')).reduce((a, f) => a + parseSizeMB(f.size), 0);
+    const docsMB = files.filter(f => f.type.includes('pdf') || f.type.includes('document') || f.type.includes('text') || f.type.includes('spreadsheet') || f.type.includes('presentation')).reduce((a, f) => a + parseSizeMB(f.size), 0);
+    const musicMB = files.filter(f => f.type.includes('audio')).reduce((a, f) => a + parseSizeMB(f.size), 0);
+    const otherMB = totalUsedMB - photosMB - videosMB - docsMB - musicMB;
+
+    const safePercent = (part: number) => totalUsedMB > 0 ? Math.round((part / totalUsedMB) * 100) : 0;
+    const photosP = safePercent(photosMB);
+    const videosP = safePercent(videosMB);
+    const docsP = safePercent(docsMB);
+    const musicP = safePercent(musicMB);
+    const otherP = 100 - photosP - videosP - docsP - musicP;
+
     return (
         <main className={styles.dashboard}>
             <input
@@ -116,7 +151,7 @@ export default function Dashboard() {
                 <div>
                     <h1 className={styles.title}>My Drive Storage.</h1>
                     <p className={styles.subtitle}>
-                        <span className={styles.highlight}>70%</span> storage used. Get more.
+                        <span className={styles.highlight}>{usedPercent}%</span> storage used. Get more.
                     </p>
                 </div>
                 <div className={styles.actionButtons}>
@@ -145,7 +180,7 @@ export default function Dashboard() {
                     <div className={styles.statHeader}>
                         <span className={styles.statLabel}>USED STORAGE</span>
                     </div>
-                    <div className={styles.statValue}>1.4TB</div>
+                    <div className={styles.statValue}>{formatSize(totalUsedMB)}</div>
                 </div>
                 <div className={styles.statCard}>
                     <div className={styles.statHeader}>
@@ -159,7 +194,7 @@ export default function Dashboard() {
                         <span className={styles.statLabel}>DEVICES CONNECTED</span>
                         <span className={styles.statBadge} style={{ background: 'rgba(99, 102, 241, 0.2)', color: '#6366f1' }}>Syncing</span>
                     </div>
-                    <div className={styles.statValue}>4</div>
+                    <div className={styles.statValue}>{files.length}</div>
                 </div>
             </div>
 
@@ -172,32 +207,32 @@ export default function Dashboard() {
                         <p>Detailed analysis of your file distribution</p>
                     </div>
                     <div className={styles.colorBar}>
-                        <div style={{ width: '45%', background: '#6366f1' }}></div>
-                        <div style={{ width: '25%', background: '#a855f7' }}></div>
-                        <div style={{ width: '15%', background: '#f59e0b' }}></div>
-                        <div style={{ width: '10%', background: '#22c55e' }}></div>
-                        <div style={{ width: '5%', background: '#64748b' }}></div>
+                        <div style={{ width: `${photosP}%`, background: '#6366f1' }}></div>
+                        <div style={{ width: `${videosP}%`, background: '#a855f7' }}></div>
+                        <div style={{ width: `${docsP}%`, background: '#f59e0b' }}></div>
+                        <div style={{ width: `${musicP}%`, background: '#22c55e' }}></div>
+                        <div style={{ width: `${otherP}%`, background: '#64748b' }}></div>
                     </div>
                     <div className={styles.legend}>
                         <div className={styles.legendItem}>
                             <span className={styles.dot} style={{ background: '#6366f1' }}></span>
-                            <span>PHOTOS (45%)</span>
+                            <span>PHOTOS ({photosP}%)</span>
                         </div>
                         <div className={styles.legendItem}>
                             <span className={styles.dot} style={{ background: '#a855f7' }}></span>
-                            <span>VIDEOS (25%)</span>
+                            <span>VIDEOS ({videosP}%)</span>
                         </div>
                         <div className={styles.legendItem}>
                             <span className={styles.dot} style={{ background: '#f59e0b' }}></span>
-                            <span>DOCUMENTS (15%)</span>
+                            <span>DOCUMENTS ({docsP}%)</span>
                         </div>
                         <div className={styles.legendItem}>
                             <span className={styles.dot} style={{ background: '#22c55e' }}></span>
-                            <span>MUSIC (10%)</span>
+                            <span>MUSIC ({musicP}%)</span>
                         </div>
                         <div className={styles.legendItem}>
                             <span className={styles.dot} style={{ background: '#64748b' }}></span>
-                            <span>OTHER (5%)</span>
+                            <span>OTHER ({otherP}%)</span>
                         </div>
                     </div>
                     <div className={styles.categoryCards}>
@@ -205,28 +240,28 @@ export default function Dashboard() {
                             <ImageIcon size={24} color="#6366f1" />
                             <div>
                                 <div className={styles.categoryName}>Photos</div>
-                                <div className={styles.categorySize}>630 GB</div>
+                                <div className={styles.categorySize}>{formatSize(photosMB)}</div>
                             </div>
                         </div>
                         <div className={styles.categoryCard}>
                             <Video size={24} color="#a855f7" />
                             <div>
                                 <div className={styles.categoryName}>Videos</div>
-                                <div className={styles.categorySize}>350 GB</div>
+                                <div className={styles.categorySize}>{formatSize(videosMB)}</div>
                             </div>
                         </div>
                         <div className={styles.categoryCard}>
                             <FileText size={24} color="#f59e0b" />
                             <div>
                                 <div className={styles.categoryName}>Documents</div>
-                                <div className={styles.categorySize}>210 GB</div>
+                                <div className={styles.categorySize}>{formatSize(docsMB)}</div>
                             </div>
                         </div>
                         <div className={styles.categoryCard}>
                             <Music size={24} color="#22c55e" />
                             <div>
                                 <div className={styles.categoryName}>Music</div>
-                                <div className={styles.categorySize}>140 GB</div>
+                                <div className={styles.categorySize}>{formatSize(musicMB)}</div>
                             </div>
                         </div>
                     </div>
