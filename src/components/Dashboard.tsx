@@ -138,7 +138,8 @@ export default function Dashboard() {
                         <span className={styles.statLabel}>STORAGE</span>
                         <span className={styles.statBadge}>GET MORE STORAGE</span>
                     </div>
-                    <div className={styles.statValue}>2TB</div>
+                    <div className={styles.statValue}>15GB</div>
+                    <div className={styles.statSmallText}>Get 2TB storage</div>
                 </div>
                 <div className={styles.statCard}>
                     <div className={styles.statHeader}>

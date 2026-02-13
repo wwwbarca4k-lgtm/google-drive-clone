@@ -126,6 +126,13 @@
     color: #fff;
 }
 
+.statSmallText {
+    font-size: 12px;
+    color: rgba(168, 85, 247, 0.8);
+    margin-top: 4px;
+    font-weight: 500;
+}
+
 /* Content Grid */
 .contentGrid {
     display: grid;
