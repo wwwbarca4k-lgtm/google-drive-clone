@@ -11,7 +11,6 @@ export default function Sidebar() {
     const navItems = [
         { href: '/', icon: Home, label: 'Home' },
         { href: '/recent', icon: Clock, label: 'Recent' },
-        { href: '/shared', icon: Users, label: 'Shared' },
         { href: '/favourites', icon: Star, label: 'Favourites' },
         { href: '/trash', icon: Trash2, label: 'Trash' },
     ];
