@@ -1,7 +1,7 @@
 'use client';
 
 import styles from './Dashboard.module.css';
-import { FolderPlus, Upload, Database, HardDrive, Users, Smartphone, FileText, Image, Video, Music, File } from 'lucide-react';
+import { FolderPlus, Upload, FileText, Image as ImageIcon, Video, Music, File as FileIcon } from 'lucide-react';
 import { useRef, useState, useEffect } from 'react';
 
 interface DriveFile {
@@ -95,11 +95,11 @@ export default function Dashboard() {
     };
 
     const getFileIcon = (type: string) => {
-        if (type.includes('image')) return <Image size={18} />;
+        if (type.includes('image')) return <ImageIcon size={18} />;
         if (type.includes('video')) return <Video size={18} />;
         if (type.includes('audio')) return <Music size={18} />;
         if (type.includes('pdf') || type.includes('document')) return <FileText size={18} />;
-        return <File size={18} />;
+        return <FileIcon size={18} />;
     };
 
     return (
@@ -202,7 +202,7 @@ export default function Dashboard() {
                     </div>
                     <div className={styles.categoryCards}>
                         <div className={styles.categoryCard}>
-                            <Image size={24} color="#6366f1" />
+                            <ImageIcon size={24} color="#6366f1" />
                             <div>
                                 <div className={styles.categoryName}>Photos</div>
                                 <div className={styles.categorySize}>630 GB</div>

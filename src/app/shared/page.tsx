@@ -1,7 +1,7 @@
 'use client';
 
 import styles from '../page.module.css';
-import { Users, FileText, Image, Video, Music, File } from 'lucide-react';
+import { Users, FileText, Image as ImageIcon, Video, Music, File as FileIcon } from 'lucide-react';
 import { useState, useEffect } from 'react';
 
 interface DriveFile {
@@ -36,11 +36,11 @@ export default function SharedPage() {
     }, []);
 
     const getFileIcon = (type: string) => {
-        if (type.includes('image')) return <Image size={18} />;
+        if (type.includes('image')) return <ImageIcon size={18} />;
         if (type.includes('video')) return <Video size={18} />;
         if (type.includes('audio')) return <Music size={18} />;
         if (type.includes('pdf') || type.includes('document')) return <FileText size={18} />;
-        return <File size={18} />;
+        return <FileIcon size={18} />;
     };
 
     const getIconStyle = (type: string) => {
