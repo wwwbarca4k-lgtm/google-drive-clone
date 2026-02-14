@@ -47,37 +47,56 @@ export default function Dashboard() {
         const file = e.target.files?.[0];
         if (!file) return;
 
-        if (file.size > 4 * 1024 * 1024) {
-            alert('File too large! This demo allows files under 4MB.');
+        if (file.size > 500 * 1024 * 1024) {
+            alert('File too large! Max 500MB.');
             if (fileInputRef.current) fileInputRef.current.value = '';
             return;
         }
 
         setIsUploading(true);
-        const formData = new FormData();
-        formData.append('file', file);
 
         try {
-            const response = await fetch('/api/files', {
+            // Step 1: Start a resumable upload session
+            const startRes = await fetch('/api/upload/start', {
                 method: 'POST',
-                body: formData,
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    name: file.name,
+                    mimeType: file.type || 'application/octet-stream',
+                    size: file.size,
+                }),
             });
 
-            let data;
-            try {
-                data = await response.json();
-            } catch (jsonError) {
-                if (!response.ok) {
-                    throw new Error(`Server Error: ${response.status} ${response.statusText}`);
-                }
-                throw new Error('Invalid server response');
-            }
+            const startData = await startRes.json();
+            if (!startRes.ok) throw new Error(startData.error || 'Failed to start upload');
 
-            if (!response.ok) {
-                if (data.error && data.error.includes('Missing Google Auth')) {
-                    throw new Error('Server secrets are missing! Did you add the Environment Variables in Vercel?');
-                }
-                throw new Error(data.message || data.error || 'Upload failed');
+            const uploadUrl = startData.uploadUrl;
+
+            // Step 2: Upload in chunks (3MB each)
+            const CHUNK_SIZE = 3 * 1024 * 1024;
+            const totalSize = file.size;
+            let offset = 0;
+
+            while (offset < totalSize) {
+                const end = Math.min(offset + CHUNK_SIZE, totalSize);
+                const chunk = file.slice(offset, end);
+
+                const formData = new FormData();
+                formData.append('chunk', chunk);
+                formData.append('uploadUrl', uploadUrl);
+                formData.append('start', String(offset));
+                formData.append('end', String(end - 1));
+                formData.append('total', String(totalSize));
+
+                const chunkRes = await fetch('/api/upload/chunk', {
+                    method: 'POST',
+                    body: formData,
+                });
+
+                const chunkData = await chunkRes.json();
+                if (!chunkRes.ok) throw new Error(chunkData.error || 'Chunk upload failed');
+
+                offset = end;
             }
 
             alert('File uploaded successfully!');
@@ -85,7 +104,7 @@ export default function Dashboard() {
 
         } catch (error: any) {
             if (error.message === 'Load failed' || error.message === 'Failed to fetch') {
-                alert('Network Error: The upload was interrupted.');
+                alert('Network Error: The upload was interrupted. Try again.');
             } else {
                 alert(`Error: ${error.message}`);
             }
