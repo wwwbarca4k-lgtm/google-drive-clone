@@ -23,6 +23,14 @@ export default function Dashboard() {
     const [files, setFiles] = useState<DriveFile[]>([]);
     const [loading, setLoading] = useState(true);
     const [uploadProgress, setUploadProgress] = useState({ fileName: '', percent: 0, eta: '' });
+    const [elapsedSeconds, setElapsedSeconds] = useState(0);
+
+    // Live elapsed timer
+    useEffect(() => {
+        if (!isUploading) { setElapsedSeconds(0); return; }
+        const interval = setInterval(() => setElapsedSeconds(s => s + 1), 1000);
+        return () => clearInterval(interval);
+    }, [isUploading]);
 
     const handleCancelUpload = () => {
         if (uploadAbortRef.current) {
@@ -391,6 +399,7 @@ export default function Dashboard() {
                     </div>
                     <div className={styles.uploadMeta}>
                         <span>{uploadProgress.percent}%</span>
+                        <span>{elapsedSeconds < 60 ? `${elapsedSeconds}s` : `${Math.floor(elapsedSeconds / 60)}m ${elapsedSeconds % 60}s`} elapsed</span>
                         <span>{uploadProgress.eta}</span>
                     </div>
                 </div>
