@@ -18,10 +18,18 @@ interface DriveFile {
 
 export default function Dashboard() {
     const fileInputRef = useRef<HTMLInputElement>(null);
+    const uploadAbortRef = useRef<AbortController | null>(null);
     const [isUploading, setIsUploading] = useState(false);
     const [files, setFiles] = useState<DriveFile[]>([]);
     const [loading, setLoading] = useState(true);
     const [uploadProgress, setUploadProgress] = useState({ fileName: '', percent: 0, eta: '' });
+
+    const handleCancelUpload = () => {
+        if (uploadAbortRef.current) {
+            uploadAbortRef.current.abort();
+            uploadAbortRef.current = null;
+        }
+    };
 
     useEffect(() => {
         async function fetchFiles() {
@@ -56,6 +64,8 @@ export default function Dashboard() {
 
         setIsUploading(true);
         setUploadProgress({ fileName: file.name, percent: 0, eta: 'Calculating...' });
+        const abortController = new AbortController();
+        uploadAbortRef.current = abortController;
 
         try {
             // Step 1: Start a resumable upload session
@@ -67,6 +77,7 @@ export default function Dashboard() {
                     mimeType: file.type || 'application/octet-stream',
                     size: file.size,
                 }),
+                signal: abortController.signal,
             });
 
             const startData = await startRes.json();
@@ -94,6 +105,7 @@ export default function Dashboard() {
                 const chunkRes = await fetch('/api/upload/chunk', {
                     method: 'POST',
                     body: formData,
+                    signal: abortController.signal,
                 });
 
                 const chunkData = await chunkRes.json();
@@ -117,7 +129,9 @@ export default function Dashboard() {
             window.location.reload();
 
         } catch (error: any) {
-            if (error.message === 'Load failed' || error.message === 'Failed to fetch') {
+            if (error.name === 'AbortError') {
+                // User cancelled — do nothing
+            } else if (error.message === 'Load failed' || error.message === 'Failed to fetch') {
                 alert('Network Error: The upload was interrupted. Try again.');
             } else {
                 alert(`Error: ${error.message}`);
@@ -369,6 +383,7 @@ export default function Dashboard() {
                     <div className={styles.uploadPopupHeader}>
                         <Upload size={16} />
                         <span>Uploading</span>
+                        <button className={styles.uploadCancelBtn} onClick={handleCancelUpload}>Cancel</button>
                     </div>
                     <div className={styles.uploadFileName}>{uploadProgress.fileName}</div>
                     <div className={styles.uploadBarContainer}>
