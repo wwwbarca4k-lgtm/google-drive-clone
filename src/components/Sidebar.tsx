@@ -68,10 +68,10 @@ export default function Sidebar() {
 
             {/* Settings at bottom */}
             <div className={styles.bottomSection}>
-                <div className={styles.navItem}>
+                <Link href="/settings" className={`${styles.navItem} ${pathname === '/settings' ? styles.active : ''}`}>
                     <Settings size={20} />
                     <span>Settings</span>
-                </div>
+                </Link>
 
                 {/* Storage Usage */}
                 <div className={styles.storageCard}>

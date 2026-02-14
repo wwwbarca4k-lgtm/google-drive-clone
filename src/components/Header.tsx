@@ -2,6 +2,7 @@
 
 import styles from './Header.module.css';
 import { Search, User } from 'lucide-react';
+import Link from 'next/link';
 
 export default function Header() {
   return (
@@ -18,9 +19,9 @@ export default function Header() {
 
       {/* Right Actions */}
       <div className={styles.actions}>
-        <div className={styles.userProfile}>
+        <Link href="/profile" className={styles.userProfile}>
           <User size={20} />
-        </div>
+        </Link>
       </div>
     </header>
   );
