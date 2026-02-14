@@ -380,7 +380,7 @@
 .uploadPopup {
     position: fixed;
     bottom: 24px;
-    left: 16px;
+    right: 24px;
     width: 240px;
     background: rgba(15, 15, 30, 0.95);
     border: 1px solid rgba(99, 102, 241, 0.3);
