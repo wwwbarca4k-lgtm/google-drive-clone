@@ -21,6 +21,7 @@ export default function Dashboard() {
     const [isUploading, setIsUploading] = useState(false);
     const [files, setFiles] = useState<DriveFile[]>([]);
     const [loading, setLoading] = useState(true);
+    const [uploadProgress, setUploadProgress] = useState({ fileName: '', percent: 0, eta: '' });
 
     useEffect(() => {
         async function fetchFiles() {
@@ -54,6 +55,7 @@ export default function Dashboard() {
         }
 
         setIsUploading(true);
+        setUploadProgress({ fileName: file.name, percent: 0, eta: 'Calculating...' });
 
         try {
             // Step 1: Start a resumable upload session
@@ -76,6 +78,7 @@ export default function Dashboard() {
             const CHUNK_SIZE = 3 * 1024 * 1024;
             const totalSize = file.size;
             let offset = 0;
+            const uploadStartTime = Date.now();
 
             while (offset < totalSize) {
                 const end = Math.min(offset + CHUNK_SIZE, totalSize);
@@ -97,6 +100,17 @@ export default function Dashboard() {
                 if (!chunkRes.ok) throw new Error(chunkData.error || 'Chunk upload failed');
 
                 offset = end;
+
+                // Calculate progress & ETA
+                const percent = Math.round((offset / totalSize) * 100);
+                const elapsed = (Date.now() - uploadStartTime) / 1000;
+                const speed = offset / elapsed; // bytes per second
+                const remaining = (totalSize - offset) / speed;
+                const etaStr = remaining < 60
+                    ? `${Math.ceil(remaining)}s left`
+                    : `${Math.ceil(remaining / 60)}m left`;
+
+                setUploadProgress({ fileName: file.name, percent, eta: percent >= 100 ? 'Finishing...' : etaStr });
             }
 
             alert('File uploaded successfully!');
@@ -348,6 +362,24 @@ export default function Dashboard() {
                     ))}
                 </div>
             </div>
+
+            {/* Upload Progress Popup */}
+            {isUploading && (
+                <div className={styles.uploadPopup}>
+                    <div className={styles.uploadPopupHeader}>
+                        <Upload size={16} />
+                        <span>Uploading</span>
+                    </div>
+                    <div className={styles.uploadFileName}>{uploadProgress.fileName}</div>
+                    <div className={styles.uploadBarContainer}>
+                        <div className={styles.uploadBar} style={{ width: `${uploadProgress.percent}%` }}></div>
+                    </div>
+                    <div className={styles.uploadMeta}>
+                        <span>{uploadProgress.percent}%</span>
+                        <span>{uploadProgress.eta}</span>
+                    </div>
+                </div>
+            )}
         </main>
     );
 }
