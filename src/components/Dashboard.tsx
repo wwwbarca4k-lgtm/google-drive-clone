@@ -191,6 +191,7 @@ export default function Dashboard() {
                 <div className={styles.statCard}>
                     <div className={styles.statHeader}>
                         <span className={styles.statLabel}>USED STORAGE</span>
+                        <span className={styles.statBadge} style={{ background: 'rgba(99, 102, 241, 0.2)', color: '#6366f1' }}>{usedPercent}%</span>
                     </div>
                     <div className={styles.statValue}>{formatSize(totalUsedBytes)}</div>
                 </div>
