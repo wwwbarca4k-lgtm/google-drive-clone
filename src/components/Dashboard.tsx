@@ -140,16 +140,14 @@ export default function Dashboard() {
     // Categorize files by type
     const photosBytes = files.filter(f => f.type.includes('image')).reduce((a, f) => a + (f.sizeBytes || 0), 0);
     const videosBytes = files.filter(f => f.type.includes('video')).reduce((a, f) => a + (f.sizeBytes || 0), 0);
-    const docsBytes = files.filter(f => f.type.includes('pdf') || f.type.includes('document') || f.type.includes('text') || f.type.includes('spreadsheet') || f.type.includes('presentation')).reduce((a, f) => a + (f.sizeBytes || 0), 0);
     const musicBytes = files.filter(f => f.type.includes('audio')).reduce((a, f) => a + (f.sizeBytes || 0), 0);
-    const otherBytes = totalUsedBytes - photosBytes - videosBytes - docsBytes - musicBytes;
+    const docsBytes = totalUsedBytes - photosBytes - videosBytes - musicBytes;
 
     const safePercent = (part: number) => totalUsedBytes > 0 ? Math.round((part / totalUsedBytes) * 100) : 0;
     const photosP = safePercent(photosBytes);
     const videosP = safePercent(videosBytes);
-    const docsP = safePercent(docsBytes);
     const musicP = safePercent(musicBytes);
-    const otherP = 100 - photosP - videosP - docsP - musicP;
+    const docsP = 100 - photosP - videosP - musicP;
 
     return (
         <main className={styles.dashboard}>
@@ -225,7 +223,6 @@ export default function Dashboard() {
                         <div style={{ width: `${videosP}%`, background: '#a855f7' }}></div>
                         <div style={{ width: `${docsP}%`, background: '#f59e0b' }}></div>
                         <div style={{ width: `${musicP}%`, background: '#22c55e' }}></div>
-                        <div style={{ width: `${otherP}%`, background: '#64748b' }}></div>
                     </div>
                     <div className={styles.legend}>
                         <div className={styles.legendItem}>
@@ -243,10 +240,6 @@ export default function Dashboard() {
                         <div className={styles.legendItem}>
                             <span className={styles.dot} style={{ background: '#22c55e' }}></span>
                             <span>MUSIC ({musicP}%)</span>
-                        </div>
-                        <div className={styles.legendItem}>
-                            <span className={styles.dot} style={{ background: '#64748b' }}></span>
-                            <span>OTHER ({otherP}%)</span>
                         </div>
                     </div>
                     <div className={styles.categoryCards}>
