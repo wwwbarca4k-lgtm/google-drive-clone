@@ -22,15 +22,15 @@ export default function Dashboard() {
     const [isUploading, setIsUploading] = useState(false);
     const [files, setFiles] = useState<DriveFile[]>([]);
     const [loading, setLoading] = useState(true);
-    const [uploadProgress, setUploadProgress] = useState({ fileName: '', percent: 0, eta: '' });
-    const [elapsedSeconds, setElapsedSeconds] = useState(0);
+    const [uploadProgress, setUploadProgress] = useState({ fileName: '', percent: 0 });
+    const [remainingSeconds, setRemainingSeconds] = useState(0);
 
-    // Live elapsed timer
+    // Live countdown timer
     useEffect(() => {
-        if (!isUploading) { setElapsedSeconds(0); return; }
-        const interval = setInterval(() => setElapsedSeconds(s => s + 1), 1000);
+        if (!isUploading || remainingSeconds <= 0) return;
+        const interval = setInterval(() => setRemainingSeconds(s => Math.max(s - 1, 0)), 1000);
         return () => clearInterval(interval);
-    }, [isUploading]);
+    }, [isUploading, remainingSeconds > 0]);
 
     const handleCancelUpload = () => {
         if (uploadAbortRef.current) {
@@ -71,7 +71,8 @@ export default function Dashboard() {
         }
 
         setIsUploading(true);
-        setUploadProgress({ fileName: file.name, percent: 0, eta: 'Calculating...' });
+        setUploadProgress({ fileName: file.name, percent: 0 });
+        setRemainingSeconds(0);
         const abortController = new AbortController();
         uploadAbortRef.current = abortController;
 
@@ -125,12 +126,10 @@ export default function Dashboard() {
                 const percent = Math.round((offset / totalSize) * 100);
                 const elapsed = (Date.now() - uploadStartTime) / 1000;
                 const speed = offset / elapsed; // bytes per second
-                const remaining = (totalSize - offset) / speed;
-                const etaStr = remaining < 60
-                    ? `${Math.ceil(remaining)}s left`
-                    : `${Math.ceil(remaining / 60)}m left`;
+                const remaining = Math.ceil((totalSize - offset) / speed);
 
-                setUploadProgress({ fileName: file.name, percent, eta: percent >= 100 ? 'Finishing...' : etaStr });
+                setUploadProgress({ fileName: file.name, percent });
+                setRemainingSeconds(percent >= 100 ? 0 : remaining);
             }
 
             alert('File uploaded successfully!');
@@ -399,8 +398,7 @@ export default function Dashboard() {
                     </div>
                     <div className={styles.uploadMeta}>
                         <span>{uploadProgress.percent}%</span>
-                        <span>{elapsedSeconds < 60 ? `${elapsedSeconds}s` : `${Math.floor(elapsedSeconds / 60)}m ${elapsedSeconds % 60}s`} elapsed</span>
-                        <span>{uploadProgress.eta}</span>
+                        <span>{remainingSeconds <= 0 ? 'Finishing...' : remainingSeconds >= 60 ? `${Math.floor(remainingSeconds / 60)}m ${remainingSeconds % 60}s left` : `${remainingSeconds}s left`}</span>
                     </div>
                 </div>
             )}
