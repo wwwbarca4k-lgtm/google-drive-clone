@@ -1,7 +1,7 @@
 'use client';
 
 import styles from './Dashboard.module.css';
-import { FolderPlus, Upload, FileText, Image as ImageIcon, Video, Music, File as FileIcon } from 'lucide-react';
+import { FolderPlus, Upload, FileText, Image as ImageIcon, Video, Music, File as FileIcon, ChevronDown, Folder } from 'lucide-react';
 import { useRef, useState, useEffect } from 'react';
 
 interface DriveFile {
@@ -18,11 +18,13 @@ interface DriveFile {
 
 export default function Dashboard() {
     const fileInputRef = useRef<HTMLInputElement>(null);
+    const folderInputRef = useRef<HTMLInputElement>(null);
     const uploadAbortRef = useRef<AbortController | null>(null);
     const uploadQueueRef = useRef<File[]>([]);
     const isProcessingRef = useRef(false);
     const completedRef = useRef(0);
     const [isUploading, setIsUploading] = useState(false);
+    const [showUploadMenu, setShowUploadMenu] = useState(false);
     const [files, setFiles] = useState<DriveFile[]>([]);
     const [loading, setLoading] = useState(true);
     const [uploadProgress, setUploadProgress] = useState({ fileName: '', percent: 0, current: 0, total: 0 });
@@ -61,8 +63,27 @@ export default function Dashboard() {
         fetchFiles();
     }, []);
 
+    // Close upload dropdown when clicking outside
+    useEffect(() => {
+        const handleClickOutside = () => setShowUploadMenu(false);
+        if (showUploadMenu) {
+            document.addEventListener('click', handleClickOutside);
+            return () => document.removeEventListener('click', handleClickOutside);
+        }
+    }, [showUploadMenu]);
+
     const handleUploadClick = () => {
+        setShowUploadMenu(prev => !prev);
+    };
+
+    const handleUploadFiles = () => {
+        setShowUploadMenu(false);
         fileInputRef.current?.click();
+    };
+
+    const handleUploadFolder = () => {
+        setShowUploadMenu(false);
+        folderInputRef.current?.click();
     };
 
     const uploadSingleFile = async (file: File, abortController: AbortController) => {
@@ -246,6 +267,16 @@ export default function Dashboard() {
                 onChange={handleFileChange}
                 multiple
             />
+            <input
+                type="file"
+                ref={(el) => {
+                    (folderInputRef as React.MutableRefObject<HTMLInputElement | null>).current = el;
+                    if (el) el.setAttribute('webkitdirectory', '');
+                }}
+                style={{ display: 'none' }}
+                onChange={handleFileChange}
+                multiple
+            />
 
             {/* Header Section */}
             <div className={styles.dashboardHeader}>
@@ -260,10 +291,25 @@ export default function Dashboard() {
                         <FolderPlus size={20} />
                         New Folder
                     </button>
-                    <button className={styles.primaryBtn} onClick={handleUploadClick}>
-                        <Upload size={20} />
-                        {isUploading ? 'Add More Files' : 'Upload Files'}
-                    </button>
+                    <div className={styles.uploadWrapper}>
+                        <button className={styles.primaryBtn} onClick={handleUploadClick}>
+                            <Upload size={20} />
+                            {isUploading ? 'Add More' : 'Upload'}
+                            <ChevronDown size={16} />
+                        </button>
+                        {showUploadMenu && (
+                            <div className={styles.uploadDropdown}>
+                                <button className={styles.uploadDropdownItem} onClick={handleUploadFiles}>
+                                    <FileIcon size={16} />
+                                    Files
+                                </button>
+                                <button className={styles.uploadDropdownItem} onClick={handleUploadFolder}>
+                                    <Folder size={16} />
+                                    Folder
+                                </button>
+                            </div>
+                        )}
+                    </div>
                 </div>
             </div>
 
