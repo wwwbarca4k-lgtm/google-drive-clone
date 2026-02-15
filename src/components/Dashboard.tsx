@@ -22,7 +22,7 @@ export default function Dashboard() {
     const [isUploading, setIsUploading] = useState(false);
     const [files, setFiles] = useState<DriveFile[]>([]);
     const [loading, setLoading] = useState(true);
-    const [uploadProgress, setUploadProgress] = useState({ fileName: '', percent: 0 });
+    const [uploadProgress, setUploadProgress] = useState({ fileName: '', percent: 0, current: 0, total: 0 });
     const [remainingSeconds, setRemainingSeconds] = useState(0);
 
     // Live countdown timer
@@ -60,81 +60,91 @@ export default function Dashboard() {
         fileInputRef.current?.click();
     };
 
-    const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
-        if (!file) return;
+    const uploadSingleFile = async (file: File, fileIndex: number, totalFiles: number, abortController: AbortController) => {
+        setUploadProgress({ fileName: file.name, percent: 0, current: fileIndex + 1, total: totalFiles });
+        setRemainingSeconds(0);
 
-        if (file.size > 500 * 1024 * 1024) {
-            alert('File too large! Max 500MB.');
+        // Step 1: Start a resumable upload session
+        const startRes = await fetch('/api/upload/start', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                name: file.name,
+                mimeType: file.type || 'application/octet-stream',
+                size: file.size,
+            }),
+            signal: abortController.signal,
+        });
+
+        const startData = await startRes.json();
+        if (!startRes.ok) throw new Error(startData.error || 'Failed to start upload');
+
+        const uploadUrl = startData.uploadUrl;
+
+        // Step 2: Upload in chunks (3MB each)
+        const CHUNK_SIZE = 3 * 1024 * 1024;
+        const totalSize = file.size;
+        let offset = 0;
+        const uploadStartTime = Date.now();
+
+        while (offset < totalSize) {
+            const end = Math.min(offset + CHUNK_SIZE, totalSize);
+            const chunk = file.slice(offset, end);
+
+            const formData = new FormData();
+            formData.append('chunk', chunk);
+            formData.append('uploadUrl', uploadUrl);
+            formData.append('start', String(offset));
+            formData.append('end', String(end - 1));
+            formData.append('total', String(totalSize));
+
+            const chunkRes = await fetch('/api/upload/chunk', {
+                method: 'POST',
+                body: formData,
+                signal: abortController.signal,
+            });
+
+            const chunkData = await chunkRes.json();
+            if (!chunkRes.ok) throw new Error(chunkData.error || 'Chunk upload failed');
+
+            offset = end;
+
+            // Calculate progress & ETA
+            const percent = Math.round((offset / totalSize) * 100);
+            const elapsed = (Date.now() - uploadStartTime) / 1000;
+            const speed = offset / elapsed;
+            const remaining = Math.ceil((totalSize - offset) / speed);
+
+            setUploadProgress({ fileName: file.name, percent, current: fileIndex + 1, total: totalFiles });
+            setRemainingSeconds(percent >= 100 ? 0 : remaining);
+        }
+    };
+
+    const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const selectedFiles = e.target.files;
+        if (!selectedFiles || selectedFiles.length === 0) return;
+
+        const fileList = Array.from(selectedFiles);
+        const oversized = fileList.filter(f => f.size > 500 * 1024 * 1024);
+        if (oversized.length > 0) {
+            alert(`${oversized.length} file(s) exceed 500MB and will be skipped.`);
+        }
+        const validFiles = fileList.filter(f => f.size <= 500 * 1024 * 1024);
+        if (validFiles.length === 0) {
             if (fileInputRef.current) fileInputRef.current.value = '';
             return;
         }
 
         setIsUploading(true);
-        setUploadProgress({ fileName: file.name, percent: 0 });
-        setRemainingSeconds(0);
         const abortController = new AbortController();
         uploadAbortRef.current = abortController;
 
         try {
-            // Step 1: Start a resumable upload session
-            const startRes = await fetch('/api/upload/start', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    name: file.name,
-                    mimeType: file.type || 'application/octet-stream',
-                    size: file.size,
-                }),
-                signal: abortController.signal,
-            });
-
-            const startData = await startRes.json();
-            if (!startRes.ok) throw new Error(startData.error || 'Failed to start upload');
-
-            const uploadUrl = startData.uploadUrl;
-
-            // Step 2: Upload in chunks (3MB each)
-            const CHUNK_SIZE = 3 * 1024 * 1024;
-            const totalSize = file.size;
-            let offset = 0;
-            const uploadStartTime = Date.now();
-
-            while (offset < totalSize) {
-                const end = Math.min(offset + CHUNK_SIZE, totalSize);
-                const chunk = file.slice(offset, end);
-
-                const formData = new FormData();
-                formData.append('chunk', chunk);
-                formData.append('uploadUrl', uploadUrl);
-                formData.append('start', String(offset));
-                formData.append('end', String(end - 1));
-                formData.append('total', String(totalSize));
-
-                const chunkRes = await fetch('/api/upload/chunk', {
-                    method: 'POST',
-                    body: formData,
-                    signal: abortController.signal,
-                });
-
-                const chunkData = await chunkRes.json();
-                if (!chunkRes.ok) throw new Error(chunkData.error || 'Chunk upload failed');
-
-                offset = end;
-
-                // Calculate progress & ETA
-                const percent = Math.round((offset / totalSize) * 100);
-                const elapsed = (Date.now() - uploadStartTime) / 1000;
-                const speed = offset / elapsed; // bytes per second
-                const remaining = Math.ceil((totalSize - offset) / speed);
-
-                setUploadProgress({ fileName: file.name, percent });
-                setRemainingSeconds(percent >= 100 ? 0 : remaining);
+            for (let i = 0; i < validFiles.length; i++) {
+                await uploadSingleFile(validFiles[i], i, validFiles.length, abortController);
             }
-
-            alert('File uploaded successfully!');
+            alert(`${validFiles.length} file(s) uploaded successfully!`);
             window.location.reload();
-
         } catch (error: any) {
             if (error.name === 'AbortError') {
                 // User cancelled — do nothing
@@ -210,6 +220,7 @@ export default function Dashboard() {
                 ref={fileInputRef}
                 style={{ display: 'none' }}
                 onChange={handleFileChange}
+                multiple
             />
 
             {/* Header Section */}
@@ -382,7 +393,7 @@ export default function Dashboard() {
                 <div className={styles.uploadPopup}>
                     <div className={styles.uploadPopupHeader}>
                         <Upload size={16} />
-                        <span>Uploading</span>
+                        <span>Uploading{uploadProgress.total > 1 ? ` (${uploadProgress.current}/${uploadProgress.total})` : ''}</span>
                         <button className={styles.uploadCancelBtn} onClick={handleCancelUpload}>Cancel</button>
                     </div>
                     <div className={styles.uploadFileName}>{uploadProgress.fileName}</div>
