@@ -19,6 +19,9 @@ interface DriveFile {
 export default function Dashboard() {
     const fileInputRef = useRef<HTMLInputElement>(null);
     const uploadAbortRef = useRef<AbortController | null>(null);
+    const uploadQueueRef = useRef<File[]>([]);
+    const isProcessingRef = useRef(false);
+    const completedRef = useRef(0);
     const [isUploading, setIsUploading] = useState(false);
     const [files, setFiles] = useState<DriveFile[]>([]);
     const [loading, setLoading] = useState(true);
@@ -37,6 +40,8 @@ export default function Dashboard() {
             uploadAbortRef.current.abort();
             uploadAbortRef.current = null;
         }
+        uploadQueueRef.current = [];
+        completedRef.current = 0;
     };
 
     useEffect(() => {
@@ -60,11 +65,9 @@ export default function Dashboard() {
         fileInputRef.current?.click();
     };
 
-    const uploadSingleFile = async (file: File, fileIndex: number, totalFiles: number, abortController: AbortController) => {
-        setUploadProgress({ fileName: file.name, percent: 0, current: fileIndex + 1, total: totalFiles });
+    const uploadSingleFile = async (file: File, abortController: AbortController) => {
         setRemainingSeconds(0);
 
-        // Step 1: Start a resumable upload session
         const startRes = await fetch('/api/upload/start', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -80,8 +83,6 @@ export default function Dashboard() {
         if (!startRes.ok) throw new Error(startData.error || 'Failed to start upload');
 
         const uploadUrl = startData.uploadUrl;
-
-        // Step 2: Upload in chunks (3MB each)
         const CHUNK_SIZE = 3 * 1024 * 1024;
         const totalSize = file.size;
         let offset = 0;
@@ -109,14 +110,53 @@ export default function Dashboard() {
 
             offset = end;
 
-            // Calculate progress & ETA
             const percent = Math.round((offset / totalSize) * 100);
             const elapsed = (Date.now() - uploadStartTime) / 1000;
             const speed = offset / elapsed;
             const remaining = Math.ceil((totalSize - offset) / speed);
 
-            setUploadProgress({ fileName: file.name, percent, current: fileIndex + 1, total: totalFiles });
+            const currentNum = completedRef.current + 1;
+            const totalNum = completedRef.current + uploadQueueRef.current.length;
+            setUploadProgress({ fileName: file.name, percent, current: currentNum, total: totalNum });
             setRemainingSeconds(percent >= 100 ? 0 : remaining);
+        }
+    };
+
+    const processQueue = async () => {
+        if (isProcessingRef.current) return;
+        isProcessingRef.current = true;
+
+        const abortController = new AbortController();
+        uploadAbortRef.current = abortController;
+        setIsUploading(true);
+        completedRef.current = 0;
+
+        try {
+            while (uploadQueueRef.current.length > 0) {
+                const file = uploadQueueRef.current[0];
+                const currentNum = completedRef.current + 1;
+                const totalNum = completedRef.current + uploadQueueRef.current.length;
+                setUploadProgress({ fileName: file.name, percent: 0, current: currentNum, total: totalNum });
+
+                await uploadSingleFile(file, abortController);
+
+                uploadQueueRef.current.shift();
+                completedRef.current += 1;
+            }
+            window.location.reload();
+        } catch (error: any) {
+            if (error.name === 'AbortError') {
+                // cancelled
+            } else if (error.message === 'Load failed' || error.message === 'Failed to fetch') {
+                alert('Network Error: The upload was interrupted. Try again.');
+            } else {
+                alert(`Error: ${error.message}`);
+            }
+        } finally {
+            isProcessingRef.current = false;
+            setIsUploading(false);
+            completedRef.current = 0;
+            if (fileInputRef.current) fileInputRef.current.value = '';
         }
     };
 
@@ -135,28 +175,12 @@ export default function Dashboard() {
             return;
         }
 
-        setIsUploading(true);
-        const abortController = new AbortController();
-        uploadAbortRef.current = abortController;
+        // Add to queue
+        uploadQueueRef.current.push(...validFiles);
+        if (fileInputRef.current) fileInputRef.current.value = '';
 
-        try {
-            for (let i = 0; i < validFiles.length; i++) {
-                await uploadSingleFile(validFiles[i], i, validFiles.length, abortController);
-            }
-            alert(`${validFiles.length} file(s) uploaded successfully!`);
-            window.location.reload();
-        } catch (error: any) {
-            if (error.name === 'AbortError') {
-                // User cancelled — do nothing
-            } else if (error.message === 'Load failed' || error.message === 'Failed to fetch') {
-                alert('Network Error: The upload was interrupted. Try again.');
-            } else {
-                alert(`Error: ${error.message}`);
-            }
-        } finally {
-            setIsUploading(false);
-            if (fileInputRef.current) fileInputRef.current.value = '';
-        }
+        // Start processing if not already running
+        processQueue();
     };
 
     const handleNewFolder = async () => {
@@ -236,9 +260,9 @@ export default function Dashboard() {
                         <FolderPlus size={20} />
                         New Folder
                     </button>
-                    <button className={styles.primaryBtn} onClick={handleUploadClick} disabled={isUploading}>
+                    <button className={styles.primaryBtn} onClick={handleUploadClick}>
                         <Upload size={20} />
-                        {isUploading ? 'Uploading...' : 'Upload Files'}
+                        {isUploading ? 'Add More Files' : 'Upload Files'}
                     </button>
                 </div>
             </div>
