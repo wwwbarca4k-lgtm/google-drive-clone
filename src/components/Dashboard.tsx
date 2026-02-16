@@ -246,7 +246,13 @@ export default function Dashboard() {
 
     // File action handlers
     const handleOpenFile = (file: DriveFile) => {
-        window.open(file.link, '_blank');
+        const isMedia = file.type.includes('video') || file.type.includes('audio') || file.type.includes('image');
+        if (isMedia) {
+            const params = new URLSearchParams({ name: file.name, type: file.type, link: file.link });
+            window.open(`/preview/${file.id}?${params.toString()}`, '_blank');
+        } else {
+            window.open(file.link, '_blank');
+        }
         setOpenFileMenu(null);
     };
 
