@@ -233,6 +233,7 @@ export default function Dashboard() {
     };
 
     const getFileIcon = (type: string) => {
+        if (type.includes('folder')) return <Folder size={18} />;
         if (type.includes('image')) return <ImageIcon size={18} />;
         if (type.includes('video')) return <Video size={18} />;
         if (type.includes('audio')) return <Music size={18} />;

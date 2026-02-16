@@ -1,7 +1,7 @@
 'use client';
 
 import styles from '../page.module.css';
-import { Clock, FileText, Image as ImageIcon, Video, Music, File as FileIcon, MoreVertical, ExternalLink, Download, Copy, Trash2 } from 'lucide-react';
+import { Clock, FileText, Image as ImageIcon, Video, Music, File as FileIcon, MoreVertical, ExternalLink, Download, Copy, Trash2, Folder } from 'lucide-react';
 import { useState, useEffect } from 'react';
 
 interface DriveFile {
@@ -47,6 +47,7 @@ export default function RecentPage() {
     }, [openFileMenu]);
 
     const getFileIcon = (type: string) => {
+        if (type.includes('folder')) return <Folder size={18} />;
         if (type.includes('image')) return <ImageIcon size={18} />;
         if (type.includes('video')) return <Video size={18} />;
         if (type.includes('audio')) return <Music size={18} />;
@@ -55,6 +56,7 @@ export default function RecentPage() {
     };
 
     const getIconStyle = (type: string) => {
+        if (type.includes('folder')) return styles.fileIconBlue;
         if (type.includes('image')) return styles.fileIconBlue;
         if (type.includes('video')) return styles.fileIconPurple;
         if (type.includes('audio')) return styles.fileIconGreen;
