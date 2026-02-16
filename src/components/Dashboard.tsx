@@ -465,6 +465,34 @@ export default function Dashboard() {
                                     <div className={styles.activityName}>{file.name}</div>
                                     <div className={styles.activityTime}>{file.modified}</div>
                                 </div>
+                                <div className={styles.fileMenuWrapper}>
+                                    <button
+                                        className={styles.fileMenuBtn}
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            setOpenFileMenu(openFileMenu === `activity-${file.id}` ? null : `activity-${file.id}`);
+                                        }}
+                                    >
+                                        <MoreVertical size={16} />
+                                    </button>
+                                    {openFileMenu === `activity-${file.id}` && (
+                                        <div className={styles.fileDropdown} onClick={(e) => e.stopPropagation()}>
+                                            <button className={styles.fileDropdownItem} onClick={() => handleOpenFile(file)}>
+                                                <ExternalLink size={14} /> Open
+                                            </button>
+                                            <button className={styles.fileDropdownItem} onClick={() => handleDownloadFile(file)}>
+                                                <Download size={14} /> Download
+                                            </button>
+                                            <button className={styles.fileDropdownItem} onClick={() => handleDuplicateFile(file)}>
+                                                <Copy size={14} /> Duplicate
+                                            </button>
+                                            <div className={styles.fileDropdownDivider} />
+                                            <button className={`${styles.fileDropdownItem} ${styles.fileDropdownDanger}`} onClick={() => handleTrashFile(file)}>
+                                                <Trash2 size={14} /> Move to Trash
+                                            </button>
+                                        </div>
+                                    )}
+                                </div>
                             </div>
                         ))}
                         {recentFiles.length === 0 && !loading && (
