@@ -46,20 +46,21 @@ export default function Dashboard() {
         completedRef.current = 0;
     };
 
-    useEffect(() => {
-        async function fetchFiles() {
-            try {
-                const res = await fetch('/api/files');
-                const data = await res.json();
-                if (data.files) {
-                    setFiles(data.files);
-                }
-            } catch (error) {
-                console.error('Failed to fetch files', error);
-            } finally {
-                setLoading(false);
+    const fetchFiles = async () => {
+        try {
+            const res = await fetch('/api/files');
+            const data = await res.json();
+            if (data.files) {
+                setFiles(data.files);
             }
+        } catch (error) {
+            console.error('Failed to fetch files', error);
+        } finally {
+            setLoading(false);
         }
+    };
+
+    useEffect(() => {
         fetchFiles();
     }, []);
 
@@ -163,8 +164,10 @@ export default function Dashboard() {
 
                 uploadQueueRef.current.shift();
                 completedRef.current += 1;
+
+                // Refresh file list in real-time after each file
+                await fetchFiles();
             }
-            window.location.reload();
         } catch (error: any) {
             if (error.name === 'AbortError') {
                 // cancelled
