@@ -32,7 +32,7 @@
 
 .tableHeader {
   display: grid;
-  grid-template-columns: 2fr 1fr 1fr 1fr;
+  grid-template-columns: 2fr 1fr 1fr 1fr 40px;
   padding: 16px 24px;
   font-size: 12px;
   font-weight: 600;
@@ -44,7 +44,7 @@
 
 .fileRow {
   display: grid;
-  grid-template-columns: 2fr 1fr 1fr 1fr;
+  grid-template-columns: 2fr 1fr 1fr 1fr 40px;
   padding: 16px 24px;
   align-items: center;
   font-size: 14px;
@@ -140,4 +140,95 @@
 .emptySubtitle {
   font-size: 14px;
   color: rgba(255, 255, 255, 0.4);
+}
+
+/* Row Three-Dot Menu */
+.rowMenuWrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.rowMenuBtn {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  border: none;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.rowMenuBtn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+}
+
+.rowDropdown {
+  position: absolute;
+  top: calc(100% + 4px);
+  right: 0;
+  min-width: 160px;
+  background: rgba(15, 15, 30, 0.97);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 6px;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+  z-index: 200;
+  animation: rowFadeIn 0.12s ease-out;
+}
+
+@keyframes rowFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.rowDropdownItem {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 12px;
+  border: none;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 13px;
+  font-weight: 500;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.12s;
+}
+
+.rowDropdownItem:hover {
+  background: rgba(99, 102, 241, 0.15);
+  color: #fff;
+}
+
+.rowDropdownDivider {
+  height: 1px;
+  background: rgba(255, 255, 255, 0.08);
+  margin: 4px 0;
+}
+
+.rowDropdownDanger {
+  color: #ef4444;
+}
+
+.rowDropdownDanger:hover {
+  background: rgba(239, 68, 68, 0.12);
+  color: #f87171;
 }

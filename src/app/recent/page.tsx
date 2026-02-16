@@ -1,7 +1,7 @@
 'use client';
 
 import styles from '../page.module.css';
-import { Clock, FileText, Image as ImageIcon, Video, Music, File as FileIcon } from 'lucide-react';
+import { Clock, FileText, Image as ImageIcon, Video, Music, File as FileIcon, MoreVertical, ExternalLink, Download, Copy, Trash2 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 
 interface DriveFile {
@@ -17,23 +17,34 @@ interface DriveFile {
 export default function RecentPage() {
     const [files, setFiles] = useState<DriveFile[]>([]);
     const [loading, setLoading] = useState(true);
+    const [openFileMenu, setOpenFileMenu] = useState<string | null>(null);
+
+    const fetchFiles = async () => {
+        try {
+            const res = await fetch('/api/files');
+            const data = await res.json();
+            if (data.files) {
+                setFiles(data.files);
+            }
+        } catch (error) {
+            console.error('Failed to fetch files', error);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     useEffect(() => {
-        async function fetchFiles() {
-            try {
-                const res = await fetch('/api/files');
-                const data = await res.json();
-                if (data.files) {
-                    setFiles(data.files);
-                }
-            } catch (error) {
-                console.error('Failed to fetch files', error);
-            } finally {
-                setLoading(false);
-            }
-        }
         fetchFiles();
     }, []);
+
+    // Close menu when clicking outside
+    useEffect(() => {
+        const handleClickOutside = () => setOpenFileMenu(null);
+        if (openFileMenu) {
+            document.addEventListener('click', handleClickOutside);
+            return () => document.removeEventListener('click', handleClickOutside);
+        }
+    }, [openFileMenu]);
 
     const getFileIcon = (type: string) => {
         if (type.includes('image')) return <ImageIcon size={18} />;
@@ -50,6 +61,43 @@ export default function RecentPage() {
         return styles.fileIconYellow;
     };
 
+    // File action handlers
+    const handleOpenFile = (file: DriveFile) => {
+        window.open(file.link, '_blank');
+        setOpenFileMenu(null);
+    };
+
+    const handleDownloadFile = (file: DriveFile) => {
+        const downloadUrl = `https://drive.google.com/uc?export=download&id=${file.id}`;
+        window.open(downloadUrl, '_blank');
+        setOpenFileMenu(null);
+    };
+
+    const handleDuplicateFile = async (file: DriveFile) => {
+        setOpenFileMenu(null);
+        try {
+            const res = await fetch(`/api/files/${file.id}`, { method: 'POST' });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error || 'Failed to duplicate');
+            await fetchFiles();
+        } catch (error: any) {
+            alert(`Error: ${error.message}`);
+        }
+    };
+
+    const handleTrashFile = async (file: DriveFile) => {
+        setOpenFileMenu(null);
+        if (!confirm(`Move "${file.name}" to trash?`)) return;
+        try {
+            const res = await fetch(`/api/files/${file.id}`, { method: 'PATCH' });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error || 'Failed to trash');
+            await fetchFiles();
+        } catch (error: any) {
+            alert(`Error: ${error.message}`);
+        }
+    };
+
     return (
         <main className={styles.page}>
             <div className={styles.pageHeader}>
@@ -63,6 +111,7 @@ export default function RecentPage() {
                     <div>Owner</div>
                     <div>Last Modified</div>
                     <div>Size</div>
+                    <div></div>
                 </div>
 
                 {loading && (
@@ -82,13 +131,7 @@ export default function RecentPage() {
                 )}
 
                 {files.map((file) => (
-                    <a
-                        key={file.id}
-                        href={file.link}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className={styles.fileRow}
-                    >
+                    <div key={file.id} className={styles.fileRow}>
                         <div className={styles.fileName}>
                             <div className={`${styles.fileIcon} ${getIconStyle(file.type)}`}>
                                 {getFileIcon(file.type)}
@@ -98,7 +141,35 @@ export default function RecentPage() {
                         <div className={styles.secondaryText}>{file.owner}</div>
                         <div className={styles.secondaryText}>{file.modified}</div>
                         <div className={styles.secondaryText}>{file.size}</div>
-                    </a>
+                        <div className={styles.rowMenuWrapper}>
+                            <button
+                                className={styles.rowMenuBtn}
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    setOpenFileMenu(openFileMenu === file.id ? null : file.id);
+                                }}
+                            >
+                                <MoreVertical size={16} />
+                            </button>
+                            {openFileMenu === file.id && (
+                                <div className={styles.rowDropdown} onClick={(e) => e.stopPropagation()}>
+                                    <button className={styles.rowDropdownItem} onClick={() => handleOpenFile(file)}>
+                                        <ExternalLink size={14} /> Open
+                                    </button>
+                                    <button className={styles.rowDropdownItem} onClick={() => handleDownloadFile(file)}>
+                                        <Download size={14} /> Download
+                                    </button>
+                                    <button className={styles.rowDropdownItem} onClick={() => handleDuplicateFile(file)}>
+                                        <Copy size={14} /> Duplicate
+                                    </button>
+                                    <div className={styles.rowDropdownDivider} />
+                                    <button className={`${styles.rowDropdownItem} ${styles.rowDropdownDanger}`} onClick={() => handleTrashFile(file)}>
+                                        <Trash2 size={14} /> Move to Trash
+                                    </button>
+                                </div>
+                            )}
+                        </div>
+                    </div>
                 ))}
             </div>
         </main>
