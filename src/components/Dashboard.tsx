@@ -1,7 +1,7 @@
 'use client';
 
 import styles from './Dashboard.module.css';
-import { FolderPlus, Upload, FileText, Image as ImageIcon, Video, Music, File as FileIcon, ChevronDown, Folder } from 'lucide-react';
+import { FolderPlus, Upload, FileText, Image as ImageIcon, Video, Music, File as FileIcon, ChevronDown, Folder, MoreVertical, Download, ExternalLink, Copy, Trash2 } from 'lucide-react';
 import { useRef, useState, useEffect } from 'react';
 
 interface DriveFile {
@@ -29,6 +29,7 @@ export default function Dashboard() {
     const [loading, setLoading] = useState(true);
     const [uploadProgress, setUploadProgress] = useState({ fileName: '', percent: 0, current: 0, total: 0 });
     const [remainingSeconds, setRemainingSeconds] = useState(0);
+    const [openFileMenu, setOpenFileMenu] = useState<string | null>(null);
 
     // Live countdown timer
     useEffect(() => {
@@ -64,14 +65,17 @@ export default function Dashboard() {
         fetchFiles();
     }, []);
 
-    // Close upload dropdown when clicking outside
+    // Close dropdowns when clicking outside
     useEffect(() => {
-        const handleClickOutside = () => setShowUploadMenu(false);
-        if (showUploadMenu) {
+        const handleClickOutside = () => {
+            setShowUploadMenu(false);
+            setOpenFileMenu(null);
+        };
+        if (showUploadMenu || openFileMenu) {
             document.addEventListener('click', handleClickOutside);
             return () => document.removeEventListener('click', handleClickOutside);
         }
-    }, [showUploadMenu]);
+    }, [showUploadMenu, openFileMenu]);
 
     const handleUploadClick = () => {
         setShowUploadMenu(prev => !prev);
@@ -234,6 +238,46 @@ export default function Dashboard() {
         if (type.includes('audio')) return <Music size={18} />;
         if (type.includes('pdf') || type.includes('document')) return <FileText size={18} />;
         return <FileIcon size={18} />;
+    };
+
+    // Filter out folders for recent sections
+    const recentFiles = files.filter(f => !f.type.includes('folder'));
+
+    // File action handlers
+    const handleOpenFile = (file: DriveFile) => {
+        window.open(file.link, '_blank');
+        setOpenFileMenu(null);
+    };
+
+    const handleDownloadFile = (file: DriveFile) => {
+        const downloadUrl = `https://drive.google.com/uc?export=download&id=${file.id}`;
+        window.open(downloadUrl, '_blank');
+        setOpenFileMenu(null);
+    };
+
+    const handleDuplicateFile = async (file: DriveFile) => {
+        setOpenFileMenu(null);
+        try {
+            const res = await fetch(`/api/files/${file.id}`, { method: 'POST' });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error || 'Failed to duplicate');
+            await fetchFiles();
+        } catch (error: any) {
+            alert(`Error: ${error.message}`);
+        }
+    };
+
+    const handleTrashFile = async (file: DriveFile) => {
+        setOpenFileMenu(null);
+        if (!confirm(`Move "${file.name}" to trash?`)) return;
+        try {
+            const res = await fetch(`/api/files/${file.id}`, { method: 'PATCH' });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error || 'Failed to trash');
+            await fetchFiles();
+        } catch (error: any) {
+            alert(`Error: ${error.message}`);
+        }
     };
 
     // --- Compute real stats from files ---
@@ -412,7 +456,7 @@ export default function Dashboard() {
                         <h3>Recent Activity</h3>
                     </div>
                     <div className={styles.activityList}>
-                        {files.slice(0, 3).map((file) => (
+                        {recentFiles.slice(0, 3).map((file) => (
                             <div key={file.id} className={styles.activityItem}>
                                 <div className={styles.activityIcon}>
                                     {getFileIcon(file.type)}
@@ -423,7 +467,7 @@ export default function Dashboard() {
                                 </div>
                             </div>
                         ))}
-                        {files.length === 0 && !loading && (
+                        {recentFiles.length === 0 && !loading && (
                             <div className={styles.emptyState}>No recent activity</div>
                         )}
                     </div>
@@ -438,25 +482,49 @@ export default function Dashboard() {
                 </div>
                 <div className={styles.filesList}>
                     {loading && <div className={styles.loading}>Loading files...</div>}
-                    {!loading && files.length === 0 && (
+                    {!loading && recentFiles.length === 0 && (
                         <div className={styles.emptyState}>No files found. Try uploading one!</div>
                     )}
-                    {files.slice(0, 4).map((file) => (
-                        <a
-                            key={file.id}
-                            href={file.link}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className={styles.fileCard}
-                        >
-                            <div className={styles.fileIcon}>
-                                {getFileIcon(file.type)}
+                    {recentFiles.slice(0, 4).map((file) => (
+                        <div key={file.id} className={styles.fileCard}>
+                            <div className={styles.fileCardTop}>
+                                <div className={styles.fileIcon}>
+                                    {getFileIcon(file.type)}
+                                </div>
+                                <div className={styles.fileMenuWrapper}>
+                                    <button
+                                        className={styles.fileMenuBtn}
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            setOpenFileMenu(openFileMenu === file.id ? null : file.id);
+                                        }}
+                                    >
+                                        <MoreVertical size={16} />
+                                    </button>
+                                    {openFileMenu === file.id && (
+                                        <div className={styles.fileDropdown} onClick={(e) => e.stopPropagation()}>
+                                            <button className={styles.fileDropdownItem} onClick={() => handleOpenFile(file)}>
+                                                <ExternalLink size={14} /> Open
+                                            </button>
+                                            <button className={styles.fileDropdownItem} onClick={() => handleDownloadFile(file)}>
+                                                <Download size={14} /> Download
+                                            </button>
+                                            <button className={styles.fileDropdownItem} onClick={() => handleDuplicateFile(file)}>
+                                                <Copy size={14} /> Duplicate
+                                            </button>
+                                            <div className={styles.fileDropdownDivider} />
+                                            <button className={`${styles.fileDropdownItem} ${styles.fileDropdownDanger}`} onClick={() => handleTrashFile(file)}>
+                                                <Trash2 size={14} /> Move to Trash
+                                            </button>
+                                        </div>
+                                    )}
+                                </div>
                             </div>
                             <div className={styles.fileInfo}>
                                 <div className={styles.fileName}>{file.name}</div>
                                 <div className={styles.fileSize}>{file.size}</div>
                             </div>
-                        </a>
+                        </div>
                     ))}
                 </div>
             </div>
