@@ -82,7 +82,7 @@ export default function Sidebar() {
                     <div className={styles.progressBar}>
                         <div className={styles.progress} style={{ width: `${usedPercent}%` }}></div>
                     </div>
-                    <div className={styles.storageText}>{formatSize(usedBytes)} of 15 GB</div>
+                    <div className={styles.storageText}>{formatSize(usedBytes)} of 5 GB</div>
                 </div>
             </div>
         </aside>
