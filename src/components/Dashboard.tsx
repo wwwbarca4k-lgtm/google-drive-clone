@@ -288,7 +288,7 @@ export default function Dashboard() {
     };
 
     // --- Compute real stats from files ---
-    const TOTAL_STORAGE_BYTES = 15 * 1024 * 1024 * 1024; // 15GB
+    const TOTAL_STORAGE_BYTES = 5 * 1024 * 1024 * 1024; // 5GB
 
     const totalUsedBytes = files.reduce((acc, f) => acc + (f.sizeBytes || 0), 0);
     const usedPercent = TOTAL_STORAGE_BYTES > 0 ? Math.min(Math.round((totalUsedBytes / TOTAL_STORAGE_BYTES) * 100), 100) : 0;

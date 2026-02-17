@@ -10,7 +10,7 @@ export default function Sidebar() {
     const pathname = usePathname();
     const [usedBytes, setUsedBytes] = useState(0);
 
-    const TOTAL_BYTES = 15 * 1024 * 1024 * 1024; // 15GB
+    const TOTAL_BYTES = 5 * 1024 * 1024 * 1024; // 5GB
 
     useEffect(() => {
         async function fetchUsage() {
