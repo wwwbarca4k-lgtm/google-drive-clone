@@ -386,7 +386,7 @@ export default function Dashboard() {
                 </div>
                 <div className={styles.statCard}>
                     <div className={styles.statHeader}>
-                        <span className={styles.statLabel}>SHARED FILES</span>
+                        <span className={styles.statLabel}>UPLOADED FILES</span>
                         <span className={styles.statBadge} style={{ background: 'rgba(34, 197, 94, 0.2)', color: '#22c55e' }}>Active</span>
                     </div>
                     <div className={styles.statValue}>{files.length}</div>
